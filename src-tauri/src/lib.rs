@@ -27,12 +27,14 @@ mod secure_input;
 mod settings;
 mod shortcut;
 mod signal_handle;
+mod styles;
 mod system_languages;
 mod transcription_coordinator;
 mod transcription_hook;
 mod tray;
 mod tray_i18n;
 mod utils;
+mod voice_profile;
 pub mod webkit_renderer;
 
 pub use cli::CliArgs;
@@ -335,6 +337,12 @@ fn initialize_core_logic(app_handle: &AppHandle) {
             }
             "quit" => {
                 app.exit(0);
+            }
+            id if id.starts_with("style_select:") => {
+                let style_id = id.strip_prefix("style_select:").unwrap().to_string();
+                if let Err(e) = styles::select_style(app, &style_id) {
+                    log::error!("Failed to switch style via tray: {}", e);
+                }
             }
             id if id.starts_with("model_select:") => {
                 let model_id = id.strip_prefix("model_select:").unwrap().to_string();
@@ -730,6 +738,10 @@ pub fn run(cli_args: CliArgs) {
             shortcut::update_post_process_prompt,
             shortcut::delete_post_process_prompt,
             shortcut::set_post_process_selected_prompt,
+            styles::reorder_styles,
+            styles::set_style_hidden,
+            voice_profile::build_voice_profile,
+            voice_profile::read_voice_samples,
             shortcut::update_custom_words,
             shortcut::suspend_all_bindings,
             shortcut::resume_all_bindings,
@@ -1018,7 +1030,7 @@ pub fn run(cli_args: CliArgs) {
             // for portable mode (redirects WebView2 cache to portable Data dir)
             let mut win_builder =
                 tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("/".into()))
-                    .title("Handy")
+                    .title("Rizz")
                     .inner_size(utils::MAIN_WINDOW_SIZE.0, utils::MAIN_WINDOW_SIZE.1)
                     .min_inner_size(utils::MAIN_WINDOW_SIZE.0, utils::MAIN_WINDOW_SIZE.1)
                     .resizable(true)

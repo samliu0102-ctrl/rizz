@@ -242,12 +242,36 @@ fn shared_client() -> Result<&'static reqwest::Client, String> {
         return Ok(client);
     }
     let client = reqwest::Client::builder()
-        .pool_idle_timeout(Duration::from_secs(30))
+        .pool_idle_timeout(Duration::from_secs(90))
         .tcp_keepalive(Duration::from_secs(15))
         .connect_timeout(Duration::from_secs(10))
         .build()
         .map_err(|e| report_reqwest_error("Failed to build HTTP client", &e))?;
     Ok(SHARED.get_or_init(|| client))
+}
+
+/// Opens a connection to `base_url` in the background, so the TCP and TLS
+/// handshakes happen while the user is still talking and the real request
+/// reuses the pooled connection. The response itself is ignored.
+pub fn warm_up(base_url: &str) {
+    let Ok(client) = shared_client() else {
+        return;
+    };
+    let url = base_url.to_string();
+    tauri::async_runtime::spawn(async move {
+        let started = std::time::Instant::now();
+        let result = client
+            .head(&url)
+            .timeout(Duration::from_secs(5))
+            .send()
+            .await;
+        log::debug!(
+            "LLM connection warm-up to {} finished in {:?} (ok: {})",
+            sanitized_url_for_log(&url),
+            started.elapsed(),
+            result.is_ok()
+        );
+    });
 }
 
 /// Create an HTTP client with provider-specific headers

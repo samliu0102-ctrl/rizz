@@ -1,5 +1,4 @@
 import React from "react";
-import { InfoTooltip } from "./InfoTooltip";
 
 interface SettingContainerProps {
   title: string;
@@ -22,15 +21,11 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
   grouped = false,
   layout = "horizontal",
   disabled = false,
-  tooltipPosition = "top",
   grow = false,
 }) => {
-  const info = (
-    <InfoTooltip
-      text={description}
-      placement={tooltipPosition === "bottom" ? "below" : "above"}
-    />
-  );
+  // Rows explain themselves by their title; descriptions stay for screen
+  // readers only.
+  const info = <span className="sr-only">{description}</span>;
 
   const containerClasses = grouped
     ? "px-4 p-2"
@@ -41,9 +36,7 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
       return (
         <div className={containerClasses}>
           <div className="flex items-center gap-2 mb-2">
-            <h3
-              className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}
-            >
+            <h3 className={`text-[13px] ${disabled ? "opacity-50" : ""}`}>
               {title}
             </h3>
             {info}
@@ -56,10 +49,10 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
     return (
       <div className={containerClasses}>
         <div className="mb-2">
-          <h3 className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}>
+          <h3 className={`text-[13px] ${disabled ? "opacity-50" : ""}`}>
             {title}
           </h3>
-          <p className={`text-sm ${disabled ? "opacity-50" : ""}`}>
+          <p className={`text-xs text-ink-3 ${disabled ? "opacity-50" : ""}`}>
             {description}
           </p>
         </div>
@@ -71,8 +64,8 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
   // Horizontal layout (default)
   const horizontalContainerClasses = `${
     grouped
-      ? "flex items-center justify-between min-h-12 px-4 p-2"
-      : "flex items-center justify-between min-h-12 px-4 p-2 rounded-lg border border-line"
+      ? "flex items-center justify-between min-h-11 px-4 py-1.5"
+      : "flex items-center justify-between min-h-11 px-4 py-1.5 rounded-lg border border-line"
   }${grow ? " gap-4" : ""}`;
   const titleClasses = grow ? "max-w-2/3 shrink-0" : "max-w-2/3";
   const controlClasses = grow
@@ -84,9 +77,7 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
       <div className={horizontalContainerClasses}>
         <div className={titleClasses}>
           <div className="flex items-center gap-2">
-            <h3
-              className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}
-            >
+            <h3 className={`text-[13px] ${disabled ? "opacity-50" : ""}`}>
               {title}
             </h3>
             {info}
@@ -100,10 +91,10 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
   return (
     <div className={horizontalContainerClasses}>
       <div className={titleClasses}>
-        <h3 className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}>
+        <h3 className={`text-[13px] ${disabled ? "opacity-50" : ""}`}>
           {title}
         </h3>
-        <p className={`text-sm ${disabled ? "opacity-50" : ""}`}>
+        <p className={`text-xs text-ink-3 ${disabled ? "opacity-50" : ""}`}>
           {description}
         </p>
       </div>

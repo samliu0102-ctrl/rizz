@@ -72,6 +72,9 @@ struct MenuInputs {
     update_checks_enabled: bool,
     /// The language submenu, when the selected model has languages to pick.
     language: Option<LanguageMenu>,
+    /// `(id, name)` of post-processing styles; empty when post-processing is off.
+    styles: Vec<(String, String)>,
+    selected_style: Option<String>,
 }
 
 /// What the language submenu shows: `(code, name)` entries, with codes as
@@ -394,6 +397,17 @@ fn compute_desired(app: &AppHandle, icon_state: TrayIconState) -> TrayDesired {
             locale: settings.app_language,
             update_checks_enabled: settings.update_checks_enabled,
             language,
+            styles: if settings.post_process_enabled {
+                settings
+                    .post_process_prompts
+                    .iter()
+                    .filter(|p| !p.hidden)
+                    .map(|p| (p.id.clone(), p.name.clone()))
+                    .collect()
+            } else {
+                Vec::new()
+            },
+            selected_style: settings.post_process_selected_prompt_id,
         },
     }
 }
@@ -616,9 +630,9 @@ pub fn tray_tooltip() -> String {
 
 fn version_label() -> String {
     if cfg!(debug_assertions) {
-        format!("Handy v{} (Dev)", env!("CARGO_PKG_VERSION"))
+        format!("Rizz v{} (Dev)", env!("CARGO_PKG_VERSION"))
     } else {
-        format!("Handy v{}", env!("CARGO_PKG_VERSION"))
+        format!("Rizz v{}", env!("CARGO_PKG_VERSION"))
     }
 }
 
@@ -754,6 +768,25 @@ fn build_menu(app: &AppHandle, inputs: &MenuInputs) -> tauri::Result<(Menu<tauri
         // Right below the model submenu: version, separator, copy, separator, model.
         if let Some(language) = &inputs.language {
             menu.insert(&language_submenu(app, &strings, language)?, 5)?;
+        }
+        // The style picker goes above the model, labelled with the active style.
+        if !inputs.styles.is_empty() {
+            let style_label = inputs
+                .styles
+                .iter()
+                .find(|(id, _)| Some(id) == inputs.selected_style.as_ref())
+                .map(|(_, name)| name.clone())
+                .unwrap_or_else(|| inputs.styles[0].1.clone());
+            let style_submenu = Submenu::with_id(app, "style_submenu", &style_label, true)?;
+            for (id, name) in &inputs.styles {
+                let is_active = Some(id) == inputs.selected_style.as_ref();
+                let item_id = format!("style_select:{}", id);
+                let item =
+                    CheckMenuItem::with_id(app, &item_id, name, true, is_active, None::<&str>)?;
+                style_submenu.append(&item)?;
+            }
+            menu.insert(&style_submenu, 4)?;
+            menu.insert(&separator()?, 5)?;
         }
         menu
     };
@@ -989,6 +1022,8 @@ mod tests {
             locale: "en".to_string(),
             update_checks_enabled: true,
             language: None,
+            styles: Vec::new(),
+            selected_style: None,
         }
     }
 

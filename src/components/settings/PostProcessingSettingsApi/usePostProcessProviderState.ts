@@ -8,6 +8,21 @@ import {
 import type { ModelOption } from "./types";
 import type { DropdownOption } from "../../ui/Dropdown";
 
+// The providers people pick, in order, under the names they know them by.
+// Others stay hidden unless already selected.
+const PROVIDER_LABELS: Record<string, string> = {
+  apple_intelligence: "Apple Intelligence",
+  anthropic: "Claude",
+  openai: "GPT",
+  openrouter: "OpenRouter",
+  custom: "Custom",
+};
+
+// Shown before the provider's own list loads, so there is always a choice.
+const SUGGESTED_MODELS: Record<string, string[]> = {
+  anthropic: ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"],
+};
+
 type PostProcessProviderState = {
   providerOptions: DropdownOption[];
   selectedProviderId: string;
@@ -75,11 +90,19 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
   const model = settings?.post_process_models?.[selectedProviderId] ?? "";
 
   const providerOptions = useMemo<DropdownOption[]>(() => {
-    return providers.map((provider) => ({
-      value: provider.id,
-      label: provider.label,
-    }));
-  }, [providers]);
+    const order = Object.keys(PROVIDER_LABELS);
+    return providers
+      .filter((p) => p.id in PROVIDER_LABELS || p.id === selectedProviderId)
+      .sort((a, b) => {
+        const ia = order.indexOf(a.id);
+        const ib = order.indexOf(b.id);
+        return (ia < 0 ? order.length : ia) - (ib < 0 ? order.length : ib);
+      })
+      .map((provider) => ({
+        value: provider.id,
+        label: PROVIDER_LABELS[provider.id] ?? provider.label,
+      }));
+  }, [providers, selectedProviderId]);
 
   const handleProviderSelect = useCallback(
     async (providerId: string) => {
@@ -99,6 +122,12 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
       }
 
       await setPostProcessProvider(providerId);
+
+      // Start on the first suggested model, so a key is all that's left.
+      const suggested = SUGGESTED_MODELS[providerId]?.[0];
+      if (suggested && !settings?.post_process_models?.[providerId]) {
+        void updatePostProcessModel(providerId, suggested);
+      }
 
       // Auto-fetch available models for the new provider so the model dropdown
       // reflects what's actually valid. Without this, a stale model value from
@@ -120,6 +149,7 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
       selectedProviderId,
       setPostProcessProvider,
       fetchPostProcessModels,
+      updatePostProcessModel,
       providers,
       settings,
     ],
@@ -151,10 +181,17 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
     (value: string) => {
       const trimmed = value.trim();
       if (trimmed !== apiKey) {
-        void updatePostProcessApiKey(selectedProviderId, trimmed);
+        void updatePostProcessApiKey(selectedProviderId, trimmed).then(() => {
+          if (trimmed) void fetchPostProcessModels(selectedProviderId);
+        });
       }
     },
-    [apiKey, selectedProviderId, updatePostProcessApiKey],
+    [
+      apiKey,
+      selectedProviderId,
+      updatePostProcessApiKey,
+      fetchPostProcessModels,
+    ],
   );
 
   const handleModelChange = useCallback(
@@ -199,8 +236,12 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
       options.push({ value: trimmed, label: trimmed });
     };
 
-    // Add available models from API
-    for (const candidate of availableModelsRaw) {
+    // Add available models from API, or suggestions until they load
+    const candidates =
+      availableModelsRaw.length > 0
+        ? availableModelsRaw
+        : (SUGGESTED_MODELS[selectedProviderId] ?? []);
+    for (const candidate of candidates) {
       upsert(candidate);
     }
 
@@ -208,7 +249,7 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
     upsert(model);
 
     return options;
-  }, [availableModelsRaw, model]);
+  }, [availableModelsRaw, model, selectedProviderId]);
 
   const isBaseUrlUpdating = isUpdating(
     `post_process_base_url:${selectedProviderId}`,

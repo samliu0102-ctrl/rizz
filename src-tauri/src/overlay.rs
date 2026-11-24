@@ -50,6 +50,8 @@ tauri_panel! {
 // titles need nearly all of it.
 const OVERLAY_WIDTH: f64 = 266.0;
 const OVERLAY_HEIGHT: f64 = 50.0;
+/// Tall enough for the style picker's seven rows (RecordingOverlay.css).
+const STYLE_PICKER_HEIGHT: f64 = 230.0;
 
 // Actual is 394x118, just a little extra
 const OVERLAY_STREAM_WIDTH: f64 = 400.0;
@@ -77,7 +79,9 @@ fn notice_state(session_is_live: bool) -> &'static str {
 
 /// Overlay window size (logical) for a given UI state.
 fn overlay_dimensions(state: &str) -> (f64, f64) {
-    if is_live_state(state) {
+    if state == "style" {
+        (OVERLAY_WIDTH, STYLE_PICKER_HEIGHT)
+    } else if is_live_state(state) {
         (OVERLAY_STREAM_WIDTH, OVERLAY_STREAM_HEIGHT)
     } else {
         (OVERLAY_WIDTH, OVERLAY_HEIGHT)
@@ -697,6 +701,33 @@ pub fn show_overlay_notice(app_handle: &AppHandle, notice: &Notice) {
             }
         });
     });
+}
+
+/// How long the style name holds after a switch.
+
+/// Shows the style picker: every visible style, `index` the active one.
+/// Returns false when the overlay is off or a dictation owns it.
+pub fn show_style_picker(app_handle: &AppHandle, names: Vec<String>, index: usize) -> bool {
+    if !OVERLAY_ENABLED.load(Ordering::Relaxed) || is_session_showing() {
+        return false;
+    }
+    let handle = app_handle.clone();
+    let _ = app_handle.run_on_main_thread(move || {
+        let _ = handle.emit_to(
+            "recording_overlay",
+            "overlay-style",
+            serde_json::json!({ "names": names, "index": index }),
+        );
+        show_overlay_state_on_main(&handle, "style");
+    });
+    true
+}
+
+/// Hides the style picker, unless a dictation has taken the overlay over.
+pub fn hide_style_picker(app_handle: &AppHandle) {
+    if !is_session_showing() {
+        hide_recording_overlay(app_handle);
+    }
 }
 
 /// Hides the notice early, unless a new session has replaced it.

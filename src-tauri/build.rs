@@ -386,13 +386,16 @@ fn build_apple_intelligence_bridge() {
     const REAL_SWIFT_FILE: &str = "swift/apple_intelligence.swift";
     const STUB_SWIFT_FILE: &str = "swift/apple_intelligence_stub.swift";
     const BRIDGE_HEADER: &str = "swift/apple_intelligence_bridge.h";
+    const OCR_SWIFT_FILE: &str = "swift/vision_ocr.swift";
 
     println!("cargo:rerun-if-changed={REAL_SWIFT_FILE}");
     println!("cargo:rerun-if-changed={STUB_SWIFT_FILE}");
     println!("cargo:rerun-if-changed={BRIDGE_HEADER}");
+    println!("cargo:rerun-if-changed={OCR_SWIFT_FILE}");
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR not set"));
     let object_path = out_dir.join("apple_intelligence.o");
+    let ocr_object_path = out_dir.join("vision_ocr.o");
     let static_lib_path = out_dir.join("libapple_intelligence.a");
 
     // SDKROOT/SWIFTC env-var overrides let non-Xcode toolchains (e.g. nixpkgs
@@ -483,36 +486,41 @@ fn build_apple_intelligence_bridge() {
     // Use macOS 11.0 as deployment target for compatibility
     // The @available(macOS 26.0, *) checks in Swift handle runtime availability
     // Weak linking for FoundationModels is handled via cargo:rustc-link-arg below
-    let status = Command::new(&swiftc_path)
-        .args([
-            // Without this flag swiftc treats single-file input as script
-            // mode and emits its own `_main` symbol into the .o, which can
-            // win the link against Rust's main under some linkers (e.g.
-            // open-source ld64 used in nixpkgs' Darwin stdenv), producing a
-            // binary whose main() is a 5-instruction no-op that returns 0.
-            // `-parse-as-library` keeps the compilation in library mode so
-            // no `_main` is emitted. See:
-            //   https://forums.swift.org/t/main-in-a-single-swift-file/63079
-            "-parse-as-library",
-            "-target",
-            "arm64-apple-macosx11.0",
-            "-sdk",
-            &sdk_path,
-            "-O",
-            "-import-objc-header",
-            BRIDGE_HEADER,
-            "-c",
-            source_file,
-            "-o",
-            object_path
-                .to_str()
-                .expect("Failed to convert object path to string"),
-        ])
-        .status()
-        .expect("Failed to invoke swiftc for Apple Intelligence bridge");
+    for (swift_source, swift_object) in [
+        (source_file, &object_path),
+        (OCR_SWIFT_FILE, &ocr_object_path),
+    ] {
+        let status = Command::new(&swiftc_path)
+            .args([
+                // Without this flag swiftc treats single-file input as script
+                // mode and emits its own `_main` symbol into the .o, which can
+                // win the link against Rust's main under some linkers (e.g.
+                // open-source ld64 used in nixpkgs' Darwin stdenv), producing a
+                // binary whose main() is a 5-instruction no-op that returns 0.
+                // `-parse-as-library` keeps the compilation in library mode so
+                // no `_main` is emitted. See:
+                //   https://forums.swift.org/t/main-in-a-single-swift-file/63079
+                "-parse-as-library",
+                "-target",
+                "arm64-apple-macosx11.0",
+                "-sdk",
+                &sdk_path,
+                "-O",
+                "-import-objc-header",
+                BRIDGE_HEADER,
+                "-c",
+                swift_source,
+                "-o",
+                swift_object
+                    .to_str()
+                    .expect("Failed to convert object path to string"),
+            ])
+            .status()
+            .expect("Failed to invoke swiftc for Apple Intelligence bridge");
 
-    if !status.success() {
-        panic!("swiftc failed to compile {source_file}");
+        if !status.success() {
+            panic!("swiftc failed to compile {swift_source}");
+        }
     }
 
     let status = Command::new("libtool")
@@ -523,6 +531,9 @@ fn build_apple_intelligence_bridge() {
                 .to_str()
                 .expect("Failed to convert static lib path to string"),
             object_path
+                .to_str()
+                .expect("Failed to convert object path to string"),
+            ocr_object_path
                 .to_str()
                 .expect("Failed to convert object path to string"),
         ])
@@ -541,6 +552,8 @@ fn build_apple_intelligence_bridge() {
     );
     println!("cargo:rustc-link-search=native={}", sdk_swift_lib.display());
     println!("cargo:rustc-link-lib=framework=Foundation");
+    println!("cargo:rustc-link-lib=framework=Vision");
+    println!("cargo:rustc-link-lib=framework=ImageIO");
 
     if has_foundation_models {
         // Use weak linking so the app can launch on systems without FoundationModels

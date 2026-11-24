@@ -22,7 +22,8 @@ type OverlayState =
   | "transcribing"
   | "processing"
   | "notice"
-  | "live_notice";
+  | "live_notice"
+  | "style";
 
 const isNoticeState = (state: OverlayState) =>
   state === "notice" || state === "live_notice";
@@ -42,6 +43,8 @@ const OVERLAY_FADE_MS = 300;
 
 // 13px padding on each side, the 16px badge and its 7px gap.
 const NOTICE_PILL_CHROME = 49;
+// The style picker shows at most this many rows around the active style.
+const PICKER_ROWS = 7;
 
 const RecordingOverlay: React.FC = () => {
   const { t } = useTranslation();
@@ -80,6 +83,13 @@ const RecordingOverlay: React.FC = () => {
   // while overflowing, so the resting first line stays crisp flush under the pill.
   const [overflowing, setOverflowing] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
+  // The active post-processing style: flashed on a switch, and the label while
+  // a dictation is being polished.
+  const [styleName, setStyleName] = useState<string | null>(null);
+  const [picker, setPicker] = useState<{ names: string[]; index: number }>({
+    names: [],
+    index: 0,
+  });
   const [noticeWidth, setNoticeWidth] = useState<number>();
   const noticeProbeRef = useRef<HTMLSpanElement>(null);
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -98,6 +108,16 @@ const RecordingOverlay: React.FC = () => {
         clearTimeout(fadeTimerRef.current);
         setNotice(event.payload);
       });
+
+      const unlistenStyle = await listen<{ names: string[]; index: number }>(
+        "overlay-style",
+        (event) => {
+          clearTimeout(fadeTimerRef.current);
+          setNotice(null);
+          setPicker(event.payload);
+          setStyleName(event.payload.names[event.payload.index] ?? null);
+        },
+      );
 
       const unlistenShow = await listen("show-overlay", async (event) => {
         const overlayState = event.payload as OverlayState;
@@ -122,6 +142,12 @@ const RecordingOverlay: React.FC = () => {
             setPosition(
               settings.data.overlay_position === "top" ? "top" : "bottom",
             );
+            if (overlayState !== "style") {
+              const selected = settings.data.post_process_prompts?.find(
+                (p) => p.id === settings.data.post_process_selected_prompt_id,
+              );
+              setStyleName(selected?.name ?? null);
+            }
           }
         } catch {
           // Keep the previous/default placement if settings can't be read.
@@ -205,6 +231,7 @@ const RecordingOverlay: React.FC = () => {
 
       return () => {
         unlistenNotice();
+        unlistenStyle();
         unlistenShow();
         unlistenHide();
         unlistenReady();
@@ -419,7 +446,7 @@ const RecordingOverlay: React.FC = () => {
             : working
               ? workingRow(
                   workKind === "polishing"
-                    ? t("overlay.processing")
+                    ? (styleName ?? t("overlay.processing"))
                     : transcribingLabel,
                   true,
                 )
@@ -432,9 +459,42 @@ const RecordingOverlay: React.FC = () => {
   // ---- Minimal overlay: exactly one row at a time — waveform (recording), or a
   // spinner + label (transcribing / processing). Never both. The pill animates its
   // width between them; the cancel button is in both rows so it stays put.
+  // ---- Style picker: the styles in order, the active one lit ----
+  if (state === "style" && !shownNotice) {
+    const first = Math.max(
+      0,
+      Math.min(
+        picker.index - Math.floor(PICKER_ROWS / 2),
+        picker.names.length - PICKER_ROWS,
+      ),
+    );
+    const rows = picker.names.slice(first, first + PICKER_ROWS);
+    return (
+      <div
+        dir={direction}
+        className={`ov-stage ${position} ov-fade ${isVisible ? "show" : ""}`}
+      >
+        <div className="spicker" role="listbox">
+          {rows.map((name, i) => (
+            <div
+              key={name + (first + i)}
+              role="option"
+              aria-selected={first + i === picker.index}
+              className={`spick ${first + i === picker.index ? "on" : ""}`}
+            >
+              {name}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const working = state === "transcribing" || state === "processing";
   const workLabel =
-    state === "processing" ? t("overlay.processing") : transcribingLabel;
+    state === "processing"
+      ? (styleName ?? t("overlay.processing"))
+      : transcribingLabel;
 
   return (
     <div

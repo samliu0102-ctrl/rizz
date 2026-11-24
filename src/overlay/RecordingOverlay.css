@@ -457,3 +457,43 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Style picker: the styles stacked, the active one lit. Anchored to the screen
+   edge like the pill; the window (overlay.rs STYLE_PICKER_HEIGHT) fits 7 rows. */
+.spicker {
+  width: 168px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: 14px;
+  background: var(--s-surface);
+  border: 1px solid var(--s-border);
+  font-family: var(--s-font);
+  animation: scard-pop 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ov-stage.bottom .spicker {
+  transform-origin: bottom center;
+}
+.ov-stage.top .spicker {
+  transform-origin: top center;
+}
+.spick {
+  height: 26px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--s-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background 120ms ease-out,
+    color 120ms ease-out;
+}
+.spick.on {
+  background: var(--color-line);
+  color: var(--color-text);
+}

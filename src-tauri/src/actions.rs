@@ -148,7 +148,7 @@ fn strip_invisible_chars(s: &str) -> String {
 /// reasoning, and some local servers put the reasoning text into `content`
 /// instead of a separate field — without this the user would get the model's
 /// chain of thought pasted along with the cleaned transcription.
-fn strip_think_block(s: &str) -> &str {
+pub(crate) fn strip_think_block(s: &str) -> &str {
     if let Some(rest) = s.trim_start().strip_prefix("<think>") {
         if let Some(end) = rest.find("</think>") {
             return rest[end + "</think>".len()..].trim_start();
@@ -160,7 +160,24 @@ fn strip_think_block(s: &str) -> &str {
 /// Build a system prompt from the user's prompt template.
 /// Removes `${output}` placeholder since the transcription is sent as the user message.
 fn build_system_prompt(prompt_template: &str) -> String {
-    prompt_template.replace("${output}", "").trim().to_string()
+    prompt_template
+        .replace(TRANSCRIPT_BLOCK, "")
+        .replace("${output}", "")
+        .trim()
+        .to_string()
+}
+
+const TRANSCRIPT_BLOCK: &str = "<transcript>\n${output}\n</transcript>";
+
+/// The user message for structured providers. Prompts that refer to
+/// `<transcript>` tags get the transcription wrapped in them, so small
+/// models can tell the text to rewrite apart from the instructions.
+fn build_user_content(prompt_template: &str, transcription: &str) -> String {
+    if prompt_template.contains(TRANSCRIPT_BLOCK) {
+        TRANSCRIPT_BLOCK.replace("${output}", transcription)
+    } else {
+        transcription.to_string()
+    }
 }
 
 /// Returns `true` when a transcription has no meaningful content to
@@ -297,7 +314,7 @@ async fn post_process_transcription(
         debug!("Using structured outputs for provider '{}'", provider.id);
 
         let system_prompt = build_system_prompt(&prompt);
-        let user_content = transcription.to_string();
+        let user_content = build_user_content(&prompt, transcription);
 
         // Handle Apple Intelligence separately since it uses native Swift APIs
         if provider.id == APPLE_INTELLIGENCE_PROVIDER_ID {
@@ -535,6 +552,19 @@ impl ShortcutAction for TranscribeAction {
         });
         let kickoff_elapsed = kickoff_started.elapsed();
 
+        // Polishing ends in an LLM request; connect now so it doesn't wait on
+        // a fresh handshake after the user stops talking.
+        if self.post_process {
+            let settings = get_settings(app);
+            if settings.rewrites_dictation() {
+                if let Some(provider) = settings.active_post_process_provider() {
+                    if provider.id != APPLE_INTELLIGENCE_PROVIDER_ID {
+                        crate::llm_client::warm_up(&provider.base_url);
+                    }
+                }
+            }
+        }
+
         // Don't open the mic if nothing can transcribe the recording. A load
         // started above reports its own failure; one already running doesn't.
         if !tm.is_model_loaded() {
@@ -736,7 +766,8 @@ impl ShortcutAction for TranscribeAction {
         play_feedback_sound(app, SoundType::Stop);
 
         let binding_id = binding_id.to_string(); // Clone binding_id for the async task
-        let post_process = self.post_process;
+                                                 // The active style decides: Original pastes what was said.
+        let post_process = self.post_process && get_settings(app).rewrites_dictation();
         let cancel_generation = rm.cancel_generation();
 
         tauri::async_runtime::spawn(async move {
@@ -1063,6 +1094,28 @@ impl ShortcutAction for CancelAction {
     }
 }
 
+// Switch to the next post-processing style
+struct CycleStyleAction;
+
+impl ShortcutAction for CycleStyleAction {
+    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        crate::styles::cycle_style(app);
+    }
+
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
+/// The style picker's arrow keys: each press steps one style.
+struct StylePickerAction(i32);
+
+impl ShortcutAction for StylePickerAction {
+    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        crate::styles::step_style(app, self.0);
+    }
+
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
 // Test Action
 struct TestAction;
 
@@ -1091,9 +1144,7 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
     let mut map = HashMap::new();
     map.insert(
         "transcribe".to_string(),
-        Arc::new(TranscribeAction {
-            post_process: false,
-        }) as Arc<dyn ShortcutAction>,
+        Arc::new(TranscribeAction { post_process: true }) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "transcribe_with_post_process".to_string(),
@@ -1103,6 +1154,16 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
         "cancel".to_string(),
         Arc::new(CancelAction) as Arc<dyn ShortcutAction>,
     );
+    map.insert(
+        "cycle_style".to_string(),
+        Arc::new(CycleStyleAction) as Arc<dyn ShortcutAction>,
+    );
+    for (id, delta) in [("style_up", -1), ("style_down", 1)] {
+        map.insert(
+            id.to_string(),
+            Arc::new(StylePickerAction(delta)) as Arc<dyn ShortcutAction>,
+        );
+    }
     map.insert(
         "test".to_string(),
         Arc::new(TestAction) as Arc<dyn ShortcutAction>,
@@ -1140,8 +1201,12 @@ mod tests {
         settings
             .post_process_models
             .insert(provider_id, "model".to_string());
-        settings.post_process_selected_prompt_id =
-            settings.post_process_prompts.first().map(|p| p.id.clone());
+        // The first style that rewrites (Original has no prompt).
+        settings.post_process_selected_prompt_id = settings
+            .post_process_prompts
+            .iter()
+            .find(|p| !p.prompt.is_empty())
+            .map(|p| p.id.clone());
         settings
     }
 

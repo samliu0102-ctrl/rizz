@@ -19,6 +19,10 @@ int is_apple_intelligence_available(void);
 // Process text using Apple's on-device LLM with separate system prompt and user content
 AppleLLMResponse* process_text_with_system_prompt_apple(const char* system_prompt, const char* user_content, int max_tokens);
 
+// Recognize text lines in an image (Vision). Response is a JSON array of
+// {text, min_x, max_x, min_y, max_y}; free with free_apple_llm_response.
+AppleLLMResponse* recognize_text_lines_apple(const char* image_path);
+
 // Free memory allocated by the Apple LLM response
 void free_apple_llm_response(AppleLLMResponse* response);
 

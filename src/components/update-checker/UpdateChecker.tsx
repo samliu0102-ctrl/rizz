@@ -254,11 +254,11 @@ const UpdateChecker: React.FC<UpdateCheckerProps> = ({ className = "" }) => {
           >
             {getUpdateStatusText()}
           </button>
-        ) : (
+        ) : updateChecksEnabled ? (
           <span className="text-ink-2 tabular-nums">
             {getUpdateStatusText()}
           </span>
-        )}
+        ) : null}
 
         {isInstalling && downloadProgress > 0 && downloadProgress < 100 && (
           <ProgressBar

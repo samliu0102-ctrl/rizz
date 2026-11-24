@@ -24,7 +24,7 @@ export const ModelSelect: React.FC<ModelSelectProps> = React.memo(
     onSelect,
     onCreate,
     onBlur,
-    className = "flex-1 min-w-[360px]",
+    className = "w-64",
   }) => {
     const handleCreate = (inputValue: string) => {
       const trimmed = inputValue.trim();
@@ -45,6 +45,7 @@ export const ModelSelect: React.FC<ModelSelectProps> = React.memo(
         placeholder={placeholder}
         disabled={disabled}
         isLoading={isLoading}
+        isClearable={false}
         isCreatable
         formatCreateLabel={(input) => `Use "${input}"`}
       />

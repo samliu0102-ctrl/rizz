@@ -336,6 +336,38 @@ async setPostProcessSelectedPrompt(id: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async reorderStyles(ids: string[]) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("reorder_styles", { ids }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async setStyleHidden(id: string, hidden: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_style_hidden", { id, hidden }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async buildVoiceProfile(name: string, samples: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("build_voice_profile", { name, samples }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async readVoiceSamples(paths: string[]) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("read_voice_samples", { paths }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async updateCustomWords(words: string[]) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("update_custom_words", { words }) };
@@ -1257,7 +1289,11 @@ export type KeyboardImplementation = "tauri" | "handy_keys" |
  * (e.g. from a Wayland compositor keybinding).
  */
 "none"
-export type LLMPrompt = { id: string; name: string; prompt: string }
+export type LLMPrompt = { id: string; name: string; prompt: string; 
+/**
+ * Left out of the cycle shortcut and the tray menu.
+ */
+hidden?: boolean }
 /**
  * When Handy's spoken-language detector picks the language for Auto.
  */

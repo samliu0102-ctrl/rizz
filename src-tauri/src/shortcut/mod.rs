@@ -311,7 +311,7 @@ pub fn resume_all_shortcuts(app: &AppHandle) {
         if id == "cancel" {
             continue;
         }
-        if id == "transcribe_with_post_process" && !settings.post_process_enabled {
+        if id == "transcribe_with_post_process" {
             continue;
         }
         if let Err(e) = register_shortcut(app, binding.clone()) {
@@ -506,8 +506,8 @@ fn register_all_shortcuts_for_implementation(
             continue;
         }
 
-        // Skip post-processing shortcut when the feature is disabled
-        if id == "transcribe_with_post_process" && !current_settings.post_process_enabled {
+        // The separate polish shortcut is retired: dictation follows the style
+        if id == "transcribe_with_post_process" {
             continue;
         }
 
@@ -1112,17 +1112,13 @@ pub fn change_post_process_enabled_setting(app: AppHandle, enabled: bool) -> Res
     settings.post_process_enabled = enabled;
     settings::write_settings(&app, settings.clone());
 
-    // Register or unregister the post-processing shortcut
+    // The separate polish shortcut is retired; only ever release it.
     if let Some(binding) = settings
         .bindings
         .get("transcribe_with_post_process")
         .cloned()
     {
-        if enabled {
-            let _ = register_shortcut(&app, binding);
-        } else {
-            let _ = unregister_shortcut(&app, binding);
-        }
+        let _ = unregister_shortcut(&app, binding);
     }
 
     crate::secure_input::reconcile_fallback(&app);
@@ -1260,10 +1256,12 @@ pub fn add_post_process_prompt(
         id: id.clone(),
         name,
         prompt,
+        hidden: false,
     };
 
     settings.post_process_prompts.push(new_prompt.clone());
     settings::write_settings(&app, settings);
+    crate::tray::update_tray_menu(&app);
 
     Ok(new_prompt)
 }
@@ -1286,6 +1284,7 @@ pub fn update_post_process_prompt(
         existing_prompt.name = name;
         existing_prompt.prompt = prompt;
         settings::write_settings(&app, settings);
+        crate::tray::update_tray_menu(&app);
         Ok(())
     } else {
         Err(format!("Prompt with id '{}' not found", id))
@@ -1296,6 +1295,8 @@ pub fn update_post_process_prompt(
 #[specta::specta]
 pub fn delete_post_process_prompt(app: AppHandle, id: String) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
+
+    log::info!("Deleting style '{}'", id);
 
     // Don't allow deleting the last prompt
     if settings.post_process_prompts.len() <= 1 {
@@ -1317,6 +1318,7 @@ pub fn delete_post_process_prompt(app: AppHandle, id: String) -> Result<(), Stri
     }
 
     settings::write_settings(&app, settings);
+    crate::tray::update_tray_menu(&app);
     Ok(())
 }
 
@@ -1368,16 +1370,7 @@ pub async fn fetch_post_process_models(
 #[tauri::command]
 #[specta::specta]
 pub fn set_post_process_selected_prompt(app: AppHandle, id: String) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-
-    // Verify the prompt exists
-    if !settings.post_process_prompts.iter().any(|p| p.id == id) {
-        return Err(format!("Prompt with id '{}' not found", id));
-    }
-
-    settings.post_process_selected_prompt_id = Some(id);
-    settings::write_settings(&app, settings);
-    Ok(())
+    crate::styles::select_style(&app, &id)
 }
 
 #[tauri::command]
