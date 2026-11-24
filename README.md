@@ -2,96 +2,96 @@
 
 # Rizz
 
-说一句大白话，Rizz 帮你换成想要的语气，直接打到光标所在的地方。
+Say it plainly. Rizz says it the way you want, and types it wherever your cursor is.
 
-按住快捷键说话 → 语音在本机转成文字 → AI 按你选的风格改写 → 自动粘贴。
+Hold a shortcut and talk → your speech becomes text on your Mac → AI rewrites it in the style you picked → it's pasted for you.
 
-## 特点
+## Features
 
-- **按住就说**：在任何 app 里都能用，微信、Slack、邮件、备忘录……
-- **一键换风格**：自带 Original（原话）、Friendly、Diplomatic、Manager、Airtight、Silly、Flirty。
-- **做你自己的风格**：粘贴聊天记录或一段文字，或者丢几张聊天截图，Rizz 会学会这种说话方式，生成一个新风格。也可以自己写要求。
-- **语音识别在本机完成**，不上传录音。
+- **Hold and talk** in any app: Messages, WhatsApp, WeChat, Slack, email, notes.
+- **Switch styles in a keystroke**: Original, Friendly Tone, Diplomatic, Manager, Airtight, Silly and Flirty are built in.
+- **Make your own styles**: paste chats or any text, or add chat screenshots, and Rizz learns how it sounds. Or write the instructions yourself.
+- **Speech recognition runs on your Mac.** Your recordings never leave it.
 
-## 安装
+## Install
 
-> 需要 Apple 芯片的 Mac（M1 及以后）。
+> Requires a Mac with Apple silicon (M1 or later).
 
-1. 打开 [Releases](../../releases/latest)，下载 `Rizz.zip`，解压，把 **Rizz.app** 拖进「应用程序」文件夹。
-2. 第一次打开时，macOS 会提示「无法验证开发者」，因为这个 app 没有经过 Apple 公证。这样打开：
-   - 双击 Rizz，看到提示后点「完成」。
-   - 打开 **系统设置 → 隐私与安全性**，往下滚，找到 Rizz 那一行，点 **仍要打开**，输入电脑密码。
-   - 旧版 macOS 也可以直接 **右键点 Rizz → 打开**。
-   - 还不行的话，在终端运行：
+1. Open [Releases](../../releases/latest), download `Rizz.zip`, unzip it and drag **Rizz.app** into **Applications**.
+2. The first time you open it, macOS says it can't verify the developer, because Rizz isn't notarized by Apple. To open it anyway:
+   - Double-click Rizz and click **Done** on the warning.
+   - Open **System Settings → Privacy & Security**, scroll down to the line about Rizz and click **Open Anyway**, then enter your Mac password.
+   - On older macOS versions you can instead **right-click Rizz → Open**.
+   - If it still won't open, run this in Terminal:
      ```bash
      xattr -dr com.apple.quarantine /Applications/Rizz.app
      ```
-3. 按提示允许 **麦克风** 和 **辅助功能** 权限。辅助功能是用来把文字粘贴到光标位置的。
-4. 第一次使用会下载一个语音识别模型，等它下完就行。
+3. Allow **Microphone** and **Accessibility** when asked. Accessibility lets Rizz paste text where your cursor is.
+4. On first use Rizz downloads a speech recognition model. Wait for it to finish.
 
-## 设置 AI（必须）
+## Set up the AI (required)
 
-改写语气要用 AI，每个人用自己的账号：
+Rewriting needs an AI model, and everyone uses their own account:
 
-1. 去 [console.anthropic.com](https://console.anthropic.com) 注册，创建一个 **API key**（需要绑卡，按用量付费；改写一句话的用量很小）。
-2. 打开 Rizz → **Styles** → 最下面的 **AI**：
-   - Provider 选 **Claude**
-   - API Key 粘贴你的 key
-   - Model 选 **claude-haiku-5-5**（最快）
-3. 不想付费的话，Provider 也可以选 **Apple Intelligence**（需要 macOS 26 及以上，并在系统设置里打开 Apple Intelligence），免费但改写效果差一些。也支持 GPT（OpenAI 的 key）。
+1. Sign up at [console.anthropic.com](https://console.anthropic.com) and create an **API key**. It needs a card and is pay-as-you-go; rewriting a message uses very little.
+2. In Rizz, open **Styles** and scroll to **AI**:
+   - Provider: **Claude**
+   - API Key: paste your key
+   - Model: **claude-haiku-5-5** (fastest)
+3. For a free option, pick **Apple Intelligence** as the provider (macOS 26 or later, with Apple Intelligence turned on in System Settings). It's free, but the rewrites are weaker. GPT (with an OpenAI key) works too.
 
-你的 key 只存在你自己的电脑上。
+Your key is stored only on your Mac.
 
-## 怎么用
+## How to use
 
-| 快捷键 | 作用 |
+| Shortcut | What it does |
 |---|---|
-| **Option + Space** | 按住说话，松开后按当前风格输出 |
-| **Option + Shift + S** | 换风格。按住 Option + Shift，再按 S 或 ↑↓ 选择 |
-| **Esc** | 取消这次录音 |
+| **Option + Space** | Hold to talk; release to get text in the current style |
+| **Option + Shift + S** | Switch style. Hold Option + Shift, then press S or ↑↓ to pick |
+| **Esc** | Cancel the recording |
 
-选 **Original** 就是说什么打什么，不改写。
+Pick **Original** to get exactly what you said, with no rewriting.
 
-## 做自己的风格
+## Make your own style
 
 **Styles → New Style from Chats or Text**
 
-- 粘贴一段聊天记录、一封邮件、任何你喜欢的文字，或者点 **Add Files** 加聊天截图。
-- 如果是聊天记录，选一下要模仿的是哪个人。
-- 点 **Build**，生成后可以再改，满意就保存。
-- 不想用例子的话，点 **Write Your Own** 直接写要求。
+- Paste a chat, an email or any writing you like, or click **Add Files** to add chat screenshots.
+- For a chat, pick the person whose voice you want to copy.
+- Click **Build**. You can edit the result before you save it.
+- To skip examples, click **Write Your Own** and describe the style yourself.
 
-风格列表可以拖动排序，用不到的可以点眼睛图标隐藏。
+Drag styles to reorder them, and click the eye icon to hide ones you don't use.
 
-> 用来生成风格的文字和截图会发给你选的 AI 处理一次，请只用你愿意分享的内容。
+> The text and screenshots you use to build a style are sent once to the AI provider you chose. Only use content you're comfortable sharing.
 
-## ⚠️ 快捷键冲突
+## ⚠️ Shortcut conflicts
 
-Option + Space 很常用。如果你装了下面这些 app，很可能会撞车，表现是：按了没反应，或者文字跑到别的窗口里去了。
+Option + Space is a popular shortcut. If you have any of these apps, they may clash with Rizz: the shortcut does nothing, or your text lands in another window.
 
-- **ChatGPT** 桌面版（浮动小窗、宠物）
-- **Alfred**、**Raycast** 等启动器
-- **Wispr Flow**、**Superwhisper**、**Spokenly**、macOS 自带听写等其他语音输入工具
+- **ChatGPT** desktop app (its floating window and pets)
+- Launchers such as **Alfred** or **Raycast**
+- Other dictation tools such as **Wispr Flow**, **Superwhisper**, **Spokenly** or macOS Dictation
 
-解决办法：去那个 app 的设置里改掉它的快捷键，或者在 Rizz → **General → Transcribe Shortcut** 换一个组合。
+To fix it, change the shortcut in that app's settings, or pick a different one in Rizz under **General → Transcribe Shortcut**.
 
-## 常见问题
+## Troubleshooting
 
-- **提示 Failed to Paste**：去 **系统设置 → 隐私与安全性 → 辅助功能**，确认 Rizz 是打开的。如果已经打开还是不行，把 Rizz 删掉（点 −）再加回来。
-- **说完没反应**：先看看上面的快捷键冲突；再看看 Styles → AI 里 key 有没有填。
-- **改写有点慢**：模型换成 claude-haiku-5-5。
+- **"Failed to Paste"**: open **System Settings → Privacy & Security → Accessibility** and make sure Rizz is on. If it is and it still fails, remove Rizz with **−** and add it again.
+- **Nothing happens after you talk**: check the shortcut conflicts above, then check that your API key is filled in under Styles → AI.
+- **Rewrites feel slow**: switch the model to claude-haiku-5-5.
 
-## 从源码编译
+## Build from source
 
-需要 [Rust](https://rustup.rs/) 和 [Bun](https://bun.sh/)：
+You need [Rust](https://rustup.rs/) and [Bun](https://bun.sh/):
 
 ```bash
 bun install
 CMAKE_POLICY_VERSION_MINIMUM=3.5 bun run tauri build --bundles app
 ```
 
-`scripts/build-rizz.sh` 会用一个叫 "Rizz Local Signing" 的本地证书签名，这样每次重新编译后 macOS 权限不会丢。没有这个证书的话，用上面的命令就行。
+`scripts/build-rizz.sh` signs the app with a local certificate named "Rizz Local Signing", so macOS keeps its permissions across rebuilds. Without that certificate, use the commands above.
 
-## 致谢
+## Credits
 
-Rizz 基于 [Handy](https://github.com/cjpais/Handy)（作者 CJ Pais，MIT 协议）修改而来。原项目说明见 [HANDY_README.md](HANDY_README.md)。
+Rizz is a fork of [Handy](https://github.com/cjpais/Handy) by CJ Pais (MIT License). The original README is in [HANDY_README.md](HANDY_README.md).
