@@ -295,20 +295,26 @@ export const StyleList: React.FC = () => {
         />
       )}
       {!adding && (
-        <div className="px-2 py-1">
-          <Button
-            onClick={() => {
-              setEditingId(null);
-              setAdding({ kind: "profile" });
-            }}
-            variant="ghost"
-            size="sm"
-            className="inline-flex items-center gap-1.5 text-logo-primary"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {t("settings.postProcessing.prompts.createNew")}
-          </Button>
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setEditingId(null);
+            setAdding({ kind: "profile" });
+          }}
+          className="group flex w-full items-center gap-3 px-3 py-3 text-start transition-colors hover:bg-logo-primary/5"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-logo-primary/12 text-logo-primary">
+            <Plus className="h-4 w-4" />
+          </span>
+          <span className="flex flex-col">
+            <span className="text-[13px] font-medium text-logo-primary">
+              {t("settings.postProcessing.prompts.createNew")}
+            </span>
+            <span className="text-[12px] text-mid-gray">
+              {t("settings.postProcessing.prompts.voiceProfile.hint")}
+            </span>
+          </span>
+        </button>
       )}
     </>
   );
