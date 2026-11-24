@@ -5,6 +5,9 @@
 set -e
 cd "$(dirname "$0")/.."
 export PATH="$HOME/.cargo/bin:$PATH" CMAKE_POLICY_VERSION_MINIMUM=3.5
+# Keep the builder's home folder (and so their username) out of the binary.
+export RUSTFLAGS="--remap-path-prefix=$HOME=/build"
+export CFLAGS="-ffile-prefix-map=$HOME=/build" CXXFLAGS="-ffile-prefix-map=$HOME=/build"
 
 bun run tauri build --bundles app --no-sign \
   -c '{"bundle":{"createUpdaterArtifacts":false}}'
