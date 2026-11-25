@@ -6,6 +6,20 @@ Say it plainly. Rizz says it the way you want, and types it wherever your cursor
 
 Hold a shortcut and talk → your speech becomes text on your Mac → AI rewrites it in the style you picked → it's pasted for you.
 
+## Why Rizz
+
+Dictation apps such as Wispr Flow turn speech into clean text. Rizz does that, then rewrites the text in a voice you choose, including voices you build from your own chats.
+
+|                        | Rizz                                                                                 | Typical subscription dictation app       |
+| ---------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------- |
+| **Price**              | Free app. You pay your AI provider per use, usually well under $1 per 1,000 messages | Wispr Flow Pro is $12–15 a month         |
+| **Free option**        | Apple Intelligence, with no word limit                                               | Wispr Flow's free plan caps words weekly |
+| **Speech recognition** | Runs on your Mac, so recordings never leave it                                       | Usually in the cloud                     |
+| **Tone**               | Switch styles mid-sentence, or make one from your own chats                          | Cleans up wording                        |
+| **Source code**        | Open (MIT)                                                                           | Closed                                   |
+
+Prices were checked in November 2026. The per-message cost assumes Claude Haiku 5.5 and a short message; long custom styles cost more.
+
 ## Features
 
 - **Hold and talk** in any app: Messages, WhatsApp, WeChat, Slack, email, notes.
