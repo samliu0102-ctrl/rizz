@@ -869,7 +869,7 @@
         "title": "Toetsenborddiagnose",
         "description": "Controleert of toetsenbordgebeurtenissen Rizz bereiken. Alleen het aantal gebeurtenissen wordt vastgelegd — nooit welke toetsen je indrukt.",
         "run": "Diagnose van 10 s uitvoeren",
-        "running": "Luisteren… druk je sneltoets een paar keer in (bijv. Option+Space)",
+        "running": "Luisteren… druk je sneltoets een paar keer in (bijv. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "ingeschakeld",
         "disabled": "uitgeschakeld",

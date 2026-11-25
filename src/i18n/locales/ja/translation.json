@@ -869,7 +869,7 @@
         "title": "キーボード診断",
         "description": "キーボードイベントが Rizz に届いているかを確認します。記録されるのはイベント数のみで、押したキーの内容は記録されません。",
         "run": "10 秒間の診断を実行",
-        "running": "待機中… ショートカットを数回押してください (例: Option+Space)",
+        "running": "待機中… ショートカットを数回押してください (例: Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "有効",
         "disabled": "無効",

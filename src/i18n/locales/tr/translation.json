@@ -869,7 +869,7 @@
         "title": "Klavye Tanılaması",
         "description": "Klavye olaylarının Rizz'ye ulaşıp ulaşmadığını denetler. Yalnızca olay sayıları kaydedilir — hangi tuşlara bastığınız asla kaydedilmez.",
         "run": "10 sn'lik tanılamayı çalıştır",
-        "running": "Dinleniyor… kısayolunuza birkaç kez basın (ör. Option+Space)",
+        "running": "Dinleniyor… kısayolunuza birkaç kez basın (ör. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "etkin",
         "disabled": "devre dışı",

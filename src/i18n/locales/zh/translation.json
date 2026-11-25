@@ -869,7 +869,7 @@
         "title": "键盘诊断",
         "description": "检查键盘事件是否能到达 Rizz。仅记录事件数量，绝不记录您按了哪些键。",
         "run": "运行 10 秒诊断",
-        "running": "正在监听… 请按几次您的快捷键（例如 Option+Space）",
+        "running": "正在监听… 请按几次您的快捷键（例如 Control+Option）",
         "secureInputLabel": "Secure Input",
         "enabled": "已启用",
         "disabled": "已禁用",

@@ -38,6 +38,17 @@ pub fn init_shortcuts(app: &AppHandle) {
     // Check which implementation to use
     match user_settings.keyboard_implementation {
         KeyboardImplementation::Tauri => {
+            // A failed HandyKeys start (often: Accessibility not granted yet on
+            // first launch) is saved as a switch to Tauri, which can't hold a
+            // modifier-only shortcut such as Control+Option. Retry HandyKeys
+            // whenever a binding needs it, and keep it once it starts.
+            if needs_handy_keys(&user_settings) && handy_keys::init_shortcuts(app).is_ok() {
+                info!("Modifier-only shortcut found; switched back to handy-keys");
+                let mut settings = settings::get_settings(app);
+                settings.keyboard_implementation = KeyboardImplementation::HandyKeys;
+                settings::write_settings(app, settings);
+                return;
+            }
             tauri_impl::init_shortcuts(app);
         }
         KeyboardImplementation::HandyKeys => {
@@ -58,6 +69,14 @@ pub fn init_shortcuts(app: &AppHandle) {
             info!("Built-in keyboard shortcuts disabled; use CLI flags or signals");
         }
     }
+}
+
+/// Whether any binding is one only HandyKeys can register (e.g. modifier-only).
+fn needs_handy_keys(settings: &settings::AppSettings) -> bool {
+    settings
+        .bindings
+        .values()
+        .any(|b| tauri_impl::validate_shortcut(&b.current_binding).is_err())
 }
 
 /// Whether the recording lifecycle currently wants the cancel shortcut.

@@ -869,7 +869,7 @@
         "title": "Tangentbordsdiagnostik",
         "description": "Kontrollerar om tangentbordshändelser når Rizz. Endast antalet händelser registreras — aldrig vilka tangenter du trycker på.",
         "run": "Kör 10 s diagnostik",
-        "running": "Lyssnar… tryck på ditt kortkommando några gånger (t.ex. Option+Space)",
+        "running": "Lyssnar… tryck på ditt kortkommando några gånger (t.ex. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "aktiverat",
         "disabled": "inaktiverat",

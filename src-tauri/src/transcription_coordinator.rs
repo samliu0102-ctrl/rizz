@@ -106,6 +106,10 @@ struct Hold {
     /// ignored. Always set for toggle; set for hold-or-toggle once a release
     /// has been classified as a tap.
     locked: bool,
+    /// The style was switched while the key was down (Control+Option, then
+    /// S). The user is holding on purpose, so the release stops recording
+    /// however short the hold was, instead of locking it on as a tap.
+    style_switched: bool,
 }
 
 /// What to do with an input that arrives while the pipeline is busy
@@ -209,6 +213,7 @@ enum Command {
     Input(InputEvent),
     Cancel { recording_was_active: bool },
     ProcessingFinished,
+    StyleSwitched,
 }
 
 /// Decide whether a key-up should be deferred (so auto-repeat can cancel it)
@@ -483,6 +488,9 @@ impl CoordinatorState {
         released_at: Instant,
         threshold: Duration,
     ) -> Option<Effect> {
+        if self.hold.as_ref().is_some_and(|h| h.style_switched) {
+            return Some(self.begin_processing(binding_id, hotkey_string));
+        }
         let held = self
             .hold
             .as_ref()
@@ -498,6 +506,16 @@ impl CoordinatorState {
             hold.locked = true;
         }
         None
+    }
+
+    /// The style switch shortcut fired. During an unlocked hold it shares the
+    /// dictation keys, so mark the hold: its release must stop, not lock.
+    fn on_style_switched(&mut self) {
+        if matches!(self.stage, Stage::Recording(_)) {
+            if let Some(hold) = self.hold.as_mut().filter(|h| !h.locked) {
+                hold.style_switched = true;
+            }
+        }
     }
 
     fn on_cancel(&mut self, recording_was_active: bool) {
@@ -550,7 +568,11 @@ impl CoordinatorState {
         locked: bool,
     ) -> Effect {
         self.stage = Stage::Recording(binding_id.clone());
-        self.hold = Some(Hold { pressed_at, locked });
+        self.hold = Some(Hold {
+            pressed_at,
+            locked,
+            style_switched: false,
+        });
         Effect::Start {
             binding_id,
             hotkey_string,
@@ -634,6 +656,7 @@ impl TranscriptionCoordinator {
                                 emit_recording_phase(&app, RecordingPhase::Cancelled);
                             }
                         }
+                        Command::StyleSwitched => state.on_style_switched(),
                         Command::ProcessingFinished => {
                             if let Some(effect) = state.on_processing_finished() {
                                 run_effect(&app, &mut state, effect);
@@ -721,6 +744,13 @@ impl TranscriptionCoordinator {
             })
             .is_err()
         {
+            warn!("Transcription coordinator channel closed");
+        }
+    }
+
+    /// The style was switched; see [`Hold::style_switched`].
+    pub fn notify_style_switched(&self) {
+        if self.tx.send(Command::StyleSwitched).is_err() {
             warn!("Transcription coordinator channel closed");
         }
     }
@@ -1352,6 +1382,45 @@ mod tests {
         assert!(state.on_input(input(mode, false), t0 + ms(5080)).is_none());
         assert!(state.on_processing_finished().is_none());
         assert_eq!(state.stage, Stage::Idle);
+    }
+
+    /// Control+Option, tap S, let go: a quick style switch while holding the
+    /// dictation keys ends the recording instead of locking it on as a tap.
+    #[test]
+    fn style_switch_during_short_hold_stops_on_release() {
+        let mode = ShortcutActivation::HoldOrToggle;
+        let mut state = CoordinatorState::new();
+        let t0 = Instant::now();
+
+        assert!(matches!(
+            state.on_input(input(mode, true), t0),
+            Some(Effect::Start { .. })
+        ));
+        state.on_style_switched();
+        assert!(state.on_input(input(mode, false), t0 + ms(150)).is_none());
+        assert!(
+            matches!(state.on_grace_expired(), Some(Effect::Stop { .. })),
+            "a switch-and-release must stop, not lock recording on"
+        );
+        assert!(!state.is_locked());
+    }
+
+    /// A style switch while idle or during a locked session changes nothing.
+    #[test]
+    fn style_switch_outside_a_hold_is_ignored() {
+        let mode = ShortcutActivation::HoldOrToggle;
+        let mut state = CoordinatorState::new();
+        let t0 = Instant::now();
+
+        state.on_style_switched();
+        assert!(state.hold.is_none());
+
+        state.on_input(input(mode, true), t0);
+        state.on_input(input(mode, false), t0 + ms(100));
+        assert!(state.on_grace_expired().is_none());
+        assert!(state.is_locked());
+        state.on_style_switched();
+        assert!(!state.hold.as_ref().unwrap().style_switched);
     }
 
     /// Regression for #2089: the first activation after startup blocks the

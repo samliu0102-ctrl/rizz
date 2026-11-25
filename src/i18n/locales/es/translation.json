@@ -869,7 +869,7 @@
         "title": "Diagnóstico del teclado",
         "description": "Comprueba si los eventos de teclado llegan a Rizz. Solo se registra el número de eventos, nunca qué teclas pulsas.",
         "run": "Ejecutar diagnóstico de 10 s",
-        "running": "Escuchando… pulsa tu atajo varias veces (p. ej. Option+Space)",
+        "running": "Escuchando… pulsa tu atajo varias veces (p. ej. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "activado",
         "disabled": "desactivado",

@@ -869,7 +869,7 @@
         "title": "Diagnostik Keyboard",
         "description": "Memeriksa apakah peristiwa keyboard mencapai Rizz. Hanya jumlah peristiwa yang dicatat — bukan tombol yang Anda tekan.",
         "run": "Jalankan diagnostik 10 dtk",
-        "running": "Mendengarkan… tekan pintasan Anda beberapa kali (mis. Option+Space)",
+        "running": "Mendengarkan… tekan pintasan Anda beberapa kali (mis. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "aktif",
         "disabled": "nonaktif",

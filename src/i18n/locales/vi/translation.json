@@ -869,7 +869,7 @@
         "title": "Chẩn đoán bàn phím",
         "description": "Kiểm tra xem các sự kiện bàn phím có đến được Rizz hay không. Chỉ số lượng sự kiện được ghi lại — không bao giờ ghi lại bạn bấm phím nào.",
         "run": "Chạy chẩn đoán 10 giây",
-        "running": "Đang lắng nghe… hãy bấm phím tắt của bạn vài lần (ví dụ: Option+Space)",
+        "running": "Đang lắng nghe… hãy bấm phím tắt của bạn vài lần (ví dụ: Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "đang bật",
         "disabled": "đang tắt",

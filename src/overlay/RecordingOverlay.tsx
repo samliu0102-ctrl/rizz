@@ -86,6 +86,9 @@ const RecordingOverlay: React.FC = () => {
   // The active post-processing style: flashed on a switch, and the label while
   // a dictation is being polished.
   const [styleName, setStyleName] = useState<string | null>(null);
+  // A style switched mid-dictation, shown in place of the waveform for a beat.
+  const [flash, setFlash] = useState<string | null>(null);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [picker, setPicker] = useState<{ names: string[]; index: number }>({
     names: [],
     index: 0,
@@ -116,6 +119,16 @@ const RecordingOverlay: React.FC = () => {
           setNotice(null);
           setPicker(event.payload);
           setStyleName(event.payload.names[event.payload.index] ?? null);
+        },
+      );
+
+      const unlistenFlash = await listen<string>(
+        "overlay-style-flash",
+        (event) => {
+          clearTimeout(flashTimerRef.current);
+          setStyleName(event.payload);
+          setFlash(event.payload);
+          flashTimerRef.current = setTimeout(() => setFlash(null), 1200);
         },
       );
 
@@ -232,6 +245,7 @@ const RecordingOverlay: React.FC = () => {
       return () => {
         unlistenNotice();
         unlistenStyle();
+        unlistenFlash();
         unlistenShow();
         unlistenHide();
         unlistenReady();
@@ -344,7 +358,7 @@ const RecordingOverlay: React.FC = () => {
       <div className="sbase-l">
         <span className={`sdot ${captureReady ? "ready" : "arming"}`} />
       </div>
-      {waveform}
+      {flash ? <span className="swork-label">{flash}</span> : waveform}
       <div className="sbase-r">
         {showTimer && <span className="stimer">{fmtTime(elapsed)}</span>}
         {showCancel && cancelBtn}

@@ -869,7 +869,7 @@
         "title": "Diagnostic du clavier",
         "description": "Vérifie si les événements clavier atteignent Rizz. Seul le nombre d'événements est enregistré, jamais les touches sur lesquelles vous appuyez.",
         "run": "Lancer un diagnostic de 10 s",
-        "running": "Écoute en cours… appuyez plusieurs fois sur votre raccourci (par ex. Option+Space)",
+        "running": "Écoute en cours… appuyez plusieurs fois sur votre raccourci (par ex. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "activé",
         "disabled": "désactivé",

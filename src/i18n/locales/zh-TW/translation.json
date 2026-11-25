@@ -869,7 +869,7 @@
         "title": "鍵盤診斷",
         "description": "檢查鍵盤事件是否能送達 Rizz。只會記錄事件數量，絕不記錄您按了哪些按鍵。",
         "run": "執行 10 秒診斷",
-        "running": "正在監聽… 請按幾次您的快捷鍵（例如 Option+Space）",
+        "running": "正在監聽… 請按幾次您的快捷鍵（例如 Control+Option）",
         "secureInputLabel": "Secure Input",
         "enabled": "已啟用",
         "disabled": "已停用",

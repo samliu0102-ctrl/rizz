@@ -869,7 +869,7 @@
         "title": "Diagnostyka klawiatury",
         "description": "Sprawdza, czy zdarzenia klawiatury docierają do Rizz. Zapisywana jest tylko liczba zdarzeń — nigdy to, które klawisze naciskasz.",
         "run": "Uruchom 10-sekundową diagnostykę",
-        "running": "Nasłuchiwanie… naciśnij swój skrót kilka razy (np. Option+Space)",
+        "running": "Nasłuchiwanie… naciśnij swój skrót kilka razy (np. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "włączony",
         "disabled": "wyłączony",

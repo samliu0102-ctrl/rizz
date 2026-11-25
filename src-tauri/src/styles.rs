@@ -6,7 +6,7 @@ use crate::settings::{self, ShortcutBinding};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 /// The id of the style after `current` in `ids`, wrapping around. Starts at
 /// the first style when `current` is missing or unknown.
@@ -96,6 +96,11 @@ pub fn step_index(len: usize, current: Option<usize>, delta: i32) -> Option<usiz
 /// Moves the active style `delta` places among the visible styles and shows
 /// the picker, whose arrow keys keep moving it until it closes.
 pub fn step_style(app: &AppHandle, delta: i32) {
+    // Shares Control+Option with dictation: a release after a switch must stop
+    // the recording, never lock it on.
+    if let Some(coordinator) = app.try_state::<crate::TranscriptionCoordinator>() {
+        coordinator.notify_style_switched();
+    }
     let settings = settings::get_settings(app);
     let visible: Vec<(String, String)> = settings
         .post_process_prompts
@@ -115,8 +120,12 @@ pub fn step_style(app: &AppHandle, delta: i32) {
         return;
     }
 
-    let names = visible.into_iter().map(|(_, name)| name).collect();
-    if !crate::overlay::show_style_picker(app, names, next) {
+    let names: Vec<String> = visible.into_iter().map(|(_, name)| name).collect();
+    if crate::overlay::is_session_showing() {
+        // Mid-dictation the recording keeps the overlay: flash the new name in
+        // the pill. The new style applies to what is being said now.
+        let _ = app.emit("overlay-style-flash", names[next].clone());
+    } else if !crate::overlay::show_style_picker(app, names, next) {
         return;
     }
     let generation = PICKER_GENERATION.fetch_add(1, Ordering::SeqCst) + 1;

@@ -869,7 +869,7 @@
         "title": "Diagnostica tastiera",
         "description": "Verifica se gli eventi della tastiera arrivano a Rizz. Viene registrato solo il numero di eventi, mai quali tasti premi.",
         "run": "Esegui diagnostica di 10 s",
-        "running": "In ascolto… premi la tua scorciatoia alcune volte (ad es. Option+Space)",
+        "running": "In ascolto… premi la tua scorciatoia alcune volte (ad es. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "abilitato",
         "disabled": "disabilitato",

@@ -869,7 +869,7 @@
         "title": "키보드 진단",
         "description": "키보드 이벤트가 Handy에 도달하는지 확인합니다. 이벤트 개수만 기록되며, 어떤 키를 눌렀는지는 절대 기록되지 않습니다.",
         "run": "10초 진단 실행",
-        "running": "수신 중… 단축키를 몇 번 눌러 보세요 (예: Option+Space)",
+        "running": "수신 중… 단축키를 몇 번 눌러 보세요 (예: Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "사용 중",
         "disabled": "사용 안 함",

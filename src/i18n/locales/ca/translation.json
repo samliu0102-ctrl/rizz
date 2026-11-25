@@ -869,7 +869,7 @@
         "title": "Diagnòstic del teclat",
         "description": "Comprova si els esdeveniments del teclat arriben al Rizz. Només se'n registra el recompte, mai les tecles que premeu.",
         "run": "Executa un diagnòstic de 10 s",
-        "running": "S'està escoltant… prema la drecera unes quantes vegades (p. ex., Option+Space)",
+        "running": "S'està escoltant… prema la drecera unes quantes vegades (p. ex., Control+Option)",
         "secureInputLabel": "Entrada segura",
         "enabled": "activada",
         "disabled": "desactivada",

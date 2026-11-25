@@ -869,7 +869,7 @@
         "title": "Tastatur-Diagnose",
         "description": "Prüft, ob Tastaturereignisse Rizz erreichen. Es wird nur die Anzahl der Ereignisse erfasst — niemals, welche Tasten du drückst.",
         "run": "10-Sekunden-Diagnose starten",
-        "running": "Lauscht… drücke dein Tastenkürzel ein paar Mal (z. B. Option+Space)",
+        "running": "Lauscht… drücke dein Tastenkürzel ein paar Mal (z. B. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "aktiviert",
         "disabled": "deaktiviert",

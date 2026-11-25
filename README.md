@@ -44,11 +44,13 @@ Your key is stored only on your Mac.
 
 ## How to use
 
-| Shortcut | What it does |
-|---|---|
-| **Option + Space** | Hold to talk; release to get text in the current style |
-| **Option + Shift + S** | Switch style. Hold Option + Shift, then press S or ↑↓ to pick |
-| **Esc** | Cancel the recording |
+| Shortcut                 | What it does                                                                                                         |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Control + Option**     | Hold to talk; release to get text in the current style. Tap once to keep talking hands-free, and tap again to finish |
+| **Control + Option + S** | Switch style. Keep holding Control + Option and tap S (or ↑↓) to pick                                                |
+| **Esc**                  | Cancel the recording                                                                                                 |
+
+The same two keys do both: hold **Control + Option**, tap **S** until you see the style you want, then just start talking. Let go and the text arrives in that style.
 
 Pick **Original** to get exactly what you said, with no rewriting.
 
@@ -67,11 +69,12 @@ Drag styles to reorder them, and click the eye icon to hide ones you don't use.
 
 ## ⚠️ Shortcut conflicts
 
-Option + Space is a popular shortcut. If you have any of these apps, they may clash with Rizz: the shortcut does nothing, or your text lands in another window.
+Rizz uses Control + Option, which most apps leave alone. If you set Rizz or another tool to share a shortcut, they clash: the shortcut does nothing, or your text lands in another window. Watch out for:
 
 - **ChatGPT** desktop app (its floating window and pets)
 - Launchers such as **Alfred** or **Raycast**
-- Other dictation tools such as **Wispr Flow**, **Superwhisper**, **Spokenly** or macOS Dictation
+- Other dictation tools such as **Wispr Flow** (it uses **fn** by default, so the two can live side by side), **Superwhisper**, **Spokenly** or macOS Dictation
+- **VoiceOver**, which uses Control + Option as its own keys while it's on
 
 To fix it, change the shortcut in that app's settings, or pick a different one in Rizz under **General → Transcribe Shortcut**.
 

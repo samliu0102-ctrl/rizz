@@ -869,7 +869,7 @@
         "title": "Diagnostika klávesnice",
         "description": "Ověří, zda události klávesnice dorazí do Rizz. Zaznamenává se pouze počet událostí — nikdy to, které klávesy stisknete.",
         "run": "Spustit 10s diagnostiku",
-        "running": "Naslouchání… několikrát stiskněte svou zkratku (např. Option+Space)",
+        "running": "Naslouchání… několikrát stiskněte svou zkratku (např. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "zapnuto",
         "disabled": "vypnuto",

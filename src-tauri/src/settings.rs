@@ -581,7 +581,7 @@ fn default_model() -> String {
     "".to_string()
 }
 
-const CURRENT_SETTINGS_SCHEMA_VERSION: u32 = 3;
+const CURRENT_SETTINGS_SCHEMA_VERSION: u32 = 4;
 
 fn default_settings_schema_version() -> u32 {
     CURRENT_SETTINGS_SCHEMA_VERSION
@@ -1093,11 +1093,41 @@ fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
 
 pub const SETTINGS_STORE_PATH: &str = "settings_store.json";
 
+/// Moves `transcribe` and `cycle_style` off Rizz's first defaults onto
+/// Control+Option and Control+Option+S, leaving bindings the user changed.
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+fn migrate_rizz_shortcuts(bindings: &mut HashMap<String, ShortcutBinding>) {
+    // Recorded bindings can list the same keys in any order.
+    fn same_keys(a: &str, b: &str) -> bool {
+        let keys = |s: &str| {
+            let mut k: Vec<String> = s.split('+').map(|p| p.trim().to_lowercase()).collect();
+            k.sort();
+            k
+        };
+        keys(a) == keys(b)
+    }
+    for (id, old, new) in [
+        ("transcribe", "option+space", "ctrl+option"),
+        ("cycle_style", "option+shift+s", "ctrl+option+s"),
+    ] {
+        if let Some(binding) = bindings.get_mut(id) {
+            if same_keys(&binding.current_binding, old) {
+                binding.current_binding = new.to_string();
+            }
+            if same_keys(&binding.default_binding, old) {
+                binding.default_binding = new.to_string();
+            }
+        }
+    }
+}
+
 pub fn get_default_settings() -> AppSettings {
     #[cfg(target_os = "windows")]
     let default_shortcut = "ctrl+space";
+    // Rizz: hold Control+Option to talk; add S to switch style. Two keys
+    // that Wispr Flow, ChatGPT and Spotlight leave alone.
     #[cfg(target_os = "macos")]
-    let default_shortcut = "option+space";
+    let default_shortcut = "ctrl+option";
     #[cfg(target_os = "linux")]
     let default_shortcut = "ctrl+alt+space";
     #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
@@ -1137,7 +1167,7 @@ pub fn get_default_settings() -> AppSettings {
     #[cfg(target_os = "windows")]
     let default_cycle_style_shortcut = "ctrl+shift+alt+s";
     #[cfg(target_os = "macos")]
-    let default_cycle_style_shortcut = "option+shift+s";
+    let default_cycle_style_shortcut = "ctrl+option+s";
     #[cfg(target_os = "linux")]
     let default_cycle_style_shortcut = "ctrl+alt+shift+s";
     #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
@@ -1499,6 +1529,15 @@ fn apply_settings_migrations(
         settings.settings_schema_version = CURRENT_SETTINGS_SCHEMA_VERSION;
         updated = true;
     }
+    if stored_schema_version < 4 {
+        // Rizz moved dictation from Option+Space (taken by ChatGPT) to holding
+        // Control+Option, with S added to switch style. Only bindings still on
+        // the old defaults move; one the user picked stays.
+        #[cfg(target_os = "macos")]
+        migrate_rizz_shortcuts(&mut settings.bindings);
+        settings.settings_schema_version = CURRENT_SETTINGS_SCHEMA_VERSION;
+        updated = true;
+    }
 
     // The generic GPU choice was removed in favor of Auto or an exact device.
     // Normalize settings created by builds that exposed that short-lived option.
@@ -1677,6 +1716,34 @@ pub fn get_recording_retention_period(app: &AppHandle) -> RecordingRetentionPeri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rizz_shortcut_migration_moves_only_old_defaults() {
+        let binding = |id: &str, key: &str| ShortcutBinding {
+            id: id.to_string(),
+            name: id.to_string(),
+            description: String::new(),
+            default_binding: key.to_string(),
+            current_binding: key.to_string(),
+        };
+        let mut bindings = HashMap::new();
+        bindings.insert(
+            "transcribe".to_string(),
+            binding("transcribe", "option+space"),
+        );
+        bindings.insert(
+            "cycle_style".to_string(),
+            binding("cycle_style", "shift+option+s"),
+        );
+        migrate_rizz_shortcuts(&mut bindings);
+        assert_eq!(bindings["transcribe"].current_binding, "ctrl+option");
+        assert_eq!(bindings["cycle_style"].current_binding, "ctrl+option+s");
+
+        let mut custom = HashMap::new();
+        custom.insert("transcribe".to_string(), binding("transcribe", "fn+space"));
+        migrate_rizz_shortcuts(&mut custom);
+        assert_eq!(custom["transcribe"].current_binding, "fn+space");
+    }
 
     #[test]
     fn stored_binding_returns_the_requested_binding() {

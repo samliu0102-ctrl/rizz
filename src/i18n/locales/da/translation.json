@@ -869,7 +869,7 @@
         "title": "Tastaturdiagnostik",
         "description": "Kontrollerer, om tastaturhændelser når frem til Rizz. Kun antallet af hændelser registreres — aldrig hvilke taster du trykker på.",
         "run": "Kør 10 s diagnostik",
-        "running": "Lytter… tryk på din genvej et par gange (f.eks. Option+Space)",
+        "running": "Lytter… tryk på din genvej et par gange (f.eks. Control+Option)",
         "secureInputLabel": "Secure Input",
         "enabled": "aktiveret",
         "disabled": "deaktiveret",
